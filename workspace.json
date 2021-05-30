@@ -1,0 +1,17 @@
+{
+    "name": "Sample Workspace",
+    "projects": [
+        {
+            "name": "Mobile",
+            "type": "CLIENT",
+            "framework": "Ionic@5",
+            "location": "./sample.mobile"
+        },
+        {
+            "name": "Api",
+            "type": "API",
+            "framework": "Firebase",
+            "location": "./sample.api"
+        }
+    ]
+}
