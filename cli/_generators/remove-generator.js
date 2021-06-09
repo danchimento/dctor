@@ -10,14 +10,12 @@ module.exports = {
        path: '_generators/{{name}}.js',
        abortOnFail: false,
     }, {
-        type: 'delete',
+        type: 'remove-line',
         path: 'plopfile.js',
-        pattern: /const {{camelCase name}} = require\('\.\/_generators\/{{name}}'\);?\n?\t?/s,
-        abortOnFail: false,
+        templateFile: '_templates/generators/import-generator.hbs',
     }, {
-        type: 'delete',
+        type: 'remove-line',
         path: 'plopfile.js',
-        pattern: /plop\.setGenerator\('{{name}}', {{camelCase name}}\);?\n?\t?/s,
-        abortOnFail: false,
+        templateFile: '_templates/generators/add-generator.hbs',
     }]
 }

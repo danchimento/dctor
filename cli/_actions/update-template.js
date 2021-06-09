@@ -1,42 +1,83 @@
-var fs = require('fs');
-var path = require('path');
-
-let ignores = [
-    'node_modules',
-    '_templates',
-]
+const fs = require('fs');
+const fsPromises = fs.promises;
+const fileUtilities = require('../_utilities/file-utilities');
+const stringUtilities = require('../_utilities/string-utilities');
+const templateUtilities = require('../_utilities/template-utilities');
 
 module.exports = function (answers, config, plop) {
     return new Promise(async (resolve, reject) => {
         try {
             console.log(answers);
 
-            let files = await getFilesInDirectory('./');
-            console.log('Found files...');
-            console.log(files);
-            
+            let ignoreDirectories = ['node_modules', '_templates', '.dctor'];
+            let files = await fileUtilities.getFilesInDirectory('./', ignoreDirectories);
+
+            console.log('Found files: ', files.length);
+
+            const newTemplate = `${await fsPromises.readFile(answers.templatePath)}`;
+
+            const templateName = fileUtilities.getLastElementFromPath(answers.templatePath);
+            const cachedTemplatePath = `.dctor/.cache/${templateName}`;
+            var template = `${await fsPromises.readFile(cachedTemplatePath)}`;
+            console.log('Template: ', template);
+
+            var props = stringUtilities.getFromBetween.get(template, "{{", "}}");
+
+            template = template.replace(/{{[a-zA-Z0-9\s]+}}/gi, "__WILDCARD__");
+            console.log('Prepared: ', template);
+
+            template = stringUtilities.escapeRegExp(template);
+            console.log('Escaped: ', template);
+
+            template = template.replace(/__WILDCARD__/gi, '(.*)');
+            console.log('Replaced: ', template);
+
+            var templateRegex = new RegExp(template, 'g');
+            console.log("Template Regex: ", templateRegex);
+
             for (var file of files) {
                 if (!file) {
                     continue;
                 }
 
-                fs.readFile(file, 'utf8', function (err, data) {
-                    if (err) {
-                        return console.log(err);
-                    }
-    
-                    // Find all uses of the template in this file
-                    let pattern = new RegExp(`\/\/ >template:${answers.name}#(.[^\n]*)\n.*\n\/\/ <template:${answers.name}#` + "\\1" + `\n`, 'g');
-                    
-                    console.log(`Searching for match of ${pattern}`);
+                var data = await fsPromises.readFile(file, 'utf8');
+                console.log(`Searching for match...`);
 
-                    let matches = [...data.matchAll(pattern)];
-                    if (matches) {
-                        console.log('Match found!', matches);
+
+                let matches = []
+                while ((match = templateRegex.exec(data)) !== null) {
+                    console.log('Match found: ', match);
+                    matches.push(match);
+                }
+                
+                if (matches.length <= 0) {
+                    continue;
+                }
+
+                console.log('Found matches: ', matches.length);
+
+                for (var match of matches) {
+                    let originalAnswers = {};
+                    for (var i = 0; i < props.length; i++) {
+                        const prop = props[i];
+                        const val = match[i + 1];
+
+                        originalAnswers[prop] = val;
                     }
-                });
+
+                    const escapedMatch = stringUtilities.escapeRegExp(match[0]);
+                    const regexMatch = new RegExp(escapedMatch);
+                    const renderedNewTemplate = plop.renderString(newTemplate, originalAnswers);
+
+                    data = data.replace(regexMatch, renderedNewTemplate);
+                    console.log("Original Answers: ", originalAnswers);
+                }
+                
+                await fsPromises.writeFile(file, data);
+                await fsPromises.writeFile(cachedTemplatePath, newTemplate);
             }
-            
+
+
             resolve();
 
         } catch (err) {
@@ -44,47 +85,4 @@ module.exports = function (answers, config, plop) {
             reject(err);
         }
     });
-}
-
-
-function getFilesInDirectory(dir) {
-    var walk = function (dir, done) {
-        var results = [];
-
-        // Check if dir should be skipped
-        let dirName = dir.substring(dir.lastIndexOf('/') + 1)
-        if (ignores.indexOf(dirName) > -1) {
-            done();
-        }
-
-        fs.readdir(dir, function (err, list) {
-            if (err) return done(err);
-            var pending = list.length;
-            if (!pending) return done(null, results);
-            list.forEach(function (file) {
-                file = path.resolve(dir, file);
-                fs.stat(file, function (err, stat) {
-                    if (stat && stat.isDirectory()) {
-                        walk(file, function (err, res) {
-                            results = results.concat(res);
-                            if (!--pending) done(null, results);
-                        });
-                    } else {
-                        results.push(file);
-                        if (!--pending) done(null, results);
-                    }
-                });
-            });
-        });
-    };
-
-    return new Promise((resolve, reject) => {
-        walk('./', function (err, results) {
-            if (err)  {
-                reject(err);
-            }
-
-            resolve(results);
-        });
-    })
 }

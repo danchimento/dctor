@@ -1,16 +1,23 @@
 const fs = require('fs');
 const fsPromises = fs.promises;
+const templateUtilities = require('../_utilities/template-utilities');
 
 module.exports = function (answers, config, plop) {
     return new Promise(async (resolve, reject) => {
 
         try {
-            console.log(answers);
+            console.log("Answers: ", answers);
+            console.log("Config: ", config);
 
             let path = plop.renderString(config.path, answers);
-            let templatePath = plop.renderString(config.templateFile, answers);
-            var template = await fsPromises.readFile(templatePath);
+            console.log("Path (rendered): ", path);
+
+            var template = await templateUtilities.getTemplate(answers, config, plop);
+            console.log("Template: ", template);
+
             var templateRendered = plop.renderString(`${template}`, answers);
+            console.log("Template (rendered): ", templateRendered);
+
             var fileData = await fsPromises.readFile(path, 'utf8');
             
             var sectionEndIndex = fileData.indexOf(`// #endregion ${config.section}`);

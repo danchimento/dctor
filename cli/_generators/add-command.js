@@ -11,13 +11,13 @@ module.exports = {
         message: 'Describe the command'
     }],
     actions: [
+        // {
+        //     type: 'add',
+        //     path: 'commands/dctor-{{name}}.js',
+        //     templateFile: '_templates/cli/command/command.hbs',
+        // },
         {
-            type: 'add',
-            path: 'commands/dctor-{{name}}.js',
-            templateFile: '_templates/cli/command/command.hbs',
-        },
-        {
-            type: 'add_line',
+            type: 'add-line',
             path: 'commands/dctor.js',
             templateFile: '_templates/cli/command/program_command.hbs',
             section: 'commands'

@@ -12,16 +12,16 @@ module.exports = {
     actions: [{
        type: 'add',
        path: '_generators/{{name}}.js',
-       templateFile: '_templates/generator.hbs' 
+       templateFile: '_templates/generators/generator.hbs' 
     }, {
-        type: 'append',
+        type: 'add-line',
         path: 'plopfile.js',
-        pattern: '>imports',
-        template: 'const {{camelCase name}} = require(\'./_generators/{{name}}\');'
+        section: 'imports',
+        templateFile: '_templates/generators/import-generator.hbs'
     }, {
-        type: 'append',
+        type: 'add-line',
         path: 'plopfile.js',
-        pattern: '>generators',
-        template: '\tplop.setGenerator(\'{{name}}\', {{camelCase name}});'
+        section: 'generators',
+        templateFile: '_templates/generators/add-generator.hbs'
     }]
 }

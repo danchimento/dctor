@@ -6,12 +6,12 @@ module.exports = {
         message: 'Name the command'
     }],
     actions: [
+        // {
+        //     type: 'remove',
+        //     path: 'commands/dctor-{{name}}.js'
+        // }, 
         {
-            type: 'remove',
-            path: 'commands/dctor-{{name}}.js'
-        }, 
-        {
-            type: 'remove_line',
+            type: 'remove-line',
             path: 'commands/dctor.js',
             section: 'commands',
             templateFile: '_templates/cli/command/program_command.hbs',
