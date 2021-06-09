@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 const { program } = require('commander')
 
-// >commands
-program.command('init', 'Wire up to a project')
-// <commands
+// #region commands
+// #endregion commands
 
 program.action(() => {
     program.help()

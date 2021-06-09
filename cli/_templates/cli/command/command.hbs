@@ -1,3 +1,17 @@
 #!/usr/bin/env node
 
-// Custom code here!
+const { Command } = require('commander');
+const program = new Command();
+
+// #region options
+// #endregion options
+
+// #region commands
+// #endregion commands
+
+program.action(args => {
+    // Custom code here!
+})
+
+program.version('0.0.1');
+program.parse(process.argv);
